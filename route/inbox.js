@@ -1,0 +1,1 @@
+// /questions/users-with-same-option/:userId
