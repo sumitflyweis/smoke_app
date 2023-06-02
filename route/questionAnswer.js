@@ -13,6 +13,8 @@ router.get("/", questionController.getAllQuestions);
 // Route for retrieving a specific question by ID
 router.get("/:questionId", questionController.getQuestionById);
 
+router.get("/getupdateOptions/:questionId/:optionIndex", questionController.getupdateOptions);
+
 // Route for updating a specific question by ID
 router.put("/:questionId", questionController.updateQuestion);
 

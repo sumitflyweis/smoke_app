@@ -10,10 +10,21 @@ const quesSchema = mongoose.Schema({
     default: "",
     required: true,
   },
-  option_1: {
-    type: String,
-    default: "",
+  questionCount:{
+    type:Number,
+    default:0
   },
+  option_1: {
+    option: {
+      type: String,
+      default: "",
+    },
+    userID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "userProfile",
+    },
+  },
+
   option_2: {
     type: String,
     default: "",

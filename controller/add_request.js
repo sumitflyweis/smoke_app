@@ -62,7 +62,7 @@ exports.rejectFriendRequest = async (req, res) => {
 exports.getAllFriendRequest = async (req, res) => {
     try {
       const cities = await FriendRequest.find();
-      res.json({msg:cities});
+      res.json({total :cities.length , msg:cities});
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

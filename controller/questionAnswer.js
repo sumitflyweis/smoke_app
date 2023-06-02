@@ -1,5 +1,6 @@
 const Question = require("../model/questionAnswer");
 const contactModel = require("../model/contactlist");
+const userSchema = require("../model/login");
 
 exports.updateOptions = async (req, res) => {
   try {
@@ -22,27 +23,33 @@ exports.updateOptions = async (req, res) => {
     // Update the name in the specified option
     if (req.body.option === "option_1") {
       question.option_1 = options.name;
+      question.userID = req.body.userid
     } else if (req.body.option === "option_2") {
       question.option_2 = options.name;
+      question.userID = req.body.userid
     } else if (req.body.option === "option_3") {
       question.option_3 = options.name;
+      question.userID = req.body.userid
     } else if (req.body.option === "option_4") {
       question.option_4 = options.name;
+      question.userID = req.body.userid
     } else {
       return res.status(400).json({ message: "Invalid option specified" });
     }
 
     const updatedQuestion = await question.save();
 
-    res.json({ question: updatedQuestion });
+       res.json({ question: updatedQuestion });
   } catch (error) {
     console.error("Error updating question options:", error);
     res.status(500).json({ message: "Failed to update question options" });
   }
-};
+}
+
+
 
 exports.createQuestion = async (req, res) => {
-  const { userID, question, option_1, option_2, option_3, option_4 } = req.body;
+  const { questionCount,userID, question, option_1, option_2, option_3, option_4 } = req.body;
 
   // Validate input
   if (
@@ -61,6 +68,7 @@ exports.createQuestion = async (req, res) => {
   try {
     // Create a new question object
     const newQuestion = new Question({
+      questionCount,
       userID,
       question,
       option_1,
@@ -169,6 +177,42 @@ exports.deleteQuestion = async (req, res) => {
 };
 
 
+// exports.optionIndex = async (req, res) => {
+//   const { questionId , optionIndex } = req.params;
+//   const {  userId } = req.body
+
+//   try {
+//     // Find the question by ID
+//     const question = await Question.findById(questionId);
+//     if (!question) {
+//       return res.status(404).json({ error: "Question not found." });
+//     }
+
+//     // Validate option index
+//     if (optionIndex < 1 || optionIndex > 4) {
+//       return res.status(400).json({ error: "Invalid option index." });
+//     }
+
+//     // Find the selected option and increment its count
+//     const optionCountField = `option_${optionIndex}Count`;
+//     question[optionCountField] += 1;
+
+//     // Update the selectedBy array with the user selection
+//     question.selectedBy.push({ userId, optionChoose: optionIndex });
+
+//     // Save the updated question
+//     await question.save();
+
+//     return res.json(question);
+//   } catch (error) {
+//     console.error(error);
+//     return res
+//       .status(500)
+//       .json({ error: "An error occurred while updating the question." });
+//   }
+// };
+
+
 exports.optionIndex = async (req, res) => {
   const { questionId, optionIndex } = req.params;
   const { userId } = req.body;
@@ -195,7 +239,12 @@ exports.optionIndex = async (req, res) => {
     // Save the updated question
     await question.save();
 
-    return res.json(question);
+    // Find users who selected the inserted option
+    const selectedUsers = question.selectedBy.filter(
+      (selected) => selected.optionChoose === optionIndex
+    );
+
+    return res.json({ question, selectedUsers });
   } catch (error) {
     console.error(error);
     return res
@@ -203,3 +252,65 @@ exports.optionIndex = async (req, res) => {
       .json({ error: "An error occurred while updating the question." });
   }
 };
+
+
+
+// exports.getupdateOptions = async (req, res) => {
+//   try {
+//     const { questionId,optionIndex } = req.params;
+//     // const { optionIds,option } = req.body;
+
+//     // Retrieve the question by its ID
+//     const question = await Question.findById(questionId);
+
+//     if (!question) {
+//       return res.status(404).json({ message: "Question not found" });
+//     }
+
+    
+// const selectedUsers = question.selectedBy.filter(
+//   (selected) => selected.optionChoose === optionIndex
+// ).map((selected) => selected.userId)
+
+// return res.json({ question, selectedUsers });
+// }
+//  catch (error) {
+//   console.error(error);
+//   return res
+//     .status(500)
+//     .json({ error: "An error occurred while updating the question." });
+// }
+// }
+
+exports.getupdateOptions = async (req, res) => {
+  try {
+    const { questionId, optionIndex } = req.params;
+
+    // Retrieve the question by its ID
+    const question = await Question.findById(questionId);
+
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    // Find users who have selected the specified optionIndex
+    const selectedUsers = await question.selectedBy
+      .filter((selected) => selected.optionChoose === optionIndex)
+      .map((selected) => selected.userId);
+
+    // Populate the user objects for selected users
+    const populatedUsers = await userSchema.find({ _id: { $in: selectedUsers }, gender: { $in: ['female', 'male'] } });
+
+    // Extract the gender field from the populated users
+    const genders = populatedUsers.map((user) => user.gender);
+
+    return res.json({ question, selectedUsers: genders });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while updating the question." });
+  }
+};
+
+
