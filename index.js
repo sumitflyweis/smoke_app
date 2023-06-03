@@ -43,6 +43,9 @@ app.get("/home",(req, res) => {
  app.use("/api/v1/request",require("./route/add_request"))
  app.use("/api/v1/activityy",require("./route/activity"))
  app.use("/api/v1/subscriptionn",require("./route/subscription"))
+ app.use("/api/v1/about",require("./route/aboutUs"))
+ app.use("/api/v1/privacyy",require("./route/privacy"))
+ app.use("/api/v1/termss",require("./model/terms"))
 //  app.use("/api/v1/inboxx",require("./route/inbox"))
 //  app.use("/api/v1/shuffle",require("./route/shuffle"))
 
